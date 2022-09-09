@@ -1,4 +1,5 @@
 import imaplib, email,os
+from datetime import date
 
 imap_host = 'imap.gmail.com'
 user = 'raghavjuyal9653@gmail.com'
@@ -18,7 +19,7 @@ imap = imaplib.IMAP4_SSL(imap_host)
 
 ## login to server
 imap.login(user, password)
-imap.select("INBOX")
+# imap.select("INBOX")
 
 
 # result,data = imap.fetch(b'37','(RFC822)')
@@ -56,27 +57,38 @@ def attachment(subject):
 
 
 # print(data)
-data = int(messages[0])
+# data = int(messages[0])
+today = date.today()
+# _date = today.strftime("%d")
+date_mon_year = today.strftime("%d-%b-%Y")
+res, data = imap.search(None , f'(SINCE "{date_mon_year}")')
 
-
-for i in range(data, data - 3, -1):
-    res, msg = imap.fetch(str(i), "(RFC822)")     
-    for response in msg:
-        if isinstance(response, tuple):
-            msg = email.message_from_bytes(response[1])
-              
-            # getting the sender's mail id
-            From = str(msg["FROM"])
-            check_mail = From.split(' ')
-            subject = msg["Subject"]
-
-            for x in check_mail:
-                if x == "<raghavraghav456147@gmail.com>" and subject == 'CSV':
-                    print('ok')
+try:
+    
+    for num in data[0].split():
         
-                    # printing the details
-                    print("From : ", From)
-                    print("subject : ", subject)
-                    # downloading attachments
-                    attachment(From)
+        res, msg = imap.fetch(num, "(RFC822)") 
+           
+        for response in msg:
+          
+            if isinstance(response, tuple):
+                msg = email.message_from_bytes(response[1])
+                
+                # getting the sender's mail id
+                From = str(msg["FROM"])
+                check_mail = From.split(' ')
+               
+                subject = msg["Subject"]
+                for x in check_mail:
+                    if x == "<raghavraghav456147@gmail.com>" and subject == 'CSV':
                     
+            
+                        # printing the details
+                        print("From : ", From)
+                        print("subject : ", subject)
+                        # downloading attachments
+                        attachment(From)
+
+except:
+    print("no mail found")
+                        
